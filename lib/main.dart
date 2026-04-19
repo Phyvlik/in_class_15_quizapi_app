@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'app_config.dart';
 import 'screens/quiz_screen.dart';
 
 void main() {
+  AppConfig.validate();
   runApp(const QuizApp());
 }
 
@@ -11,10 +13,10 @@ class QuizApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'QuizAPI Trivia',
+      title: 'Trivia Quiz',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF1565C0)),
+        colorSchemeSeed: Colors.teal,
         useMaterial3: true,
       ),
       home: const QuizScreen(),
