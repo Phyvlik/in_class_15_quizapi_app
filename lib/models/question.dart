@@ -1,37 +1,44 @@
 class Question {
-  final String text;
-  final List<String> options;
+  final String id;
+  final String question;
+  final List<String> answers;
   final String correctAnswer;
   final String difficulty;
   final String category;
 
   Question({
-    required this.text,
-    required this.options,
+    required this.id,
+    required this.question,
+    required this.answers,
     required this.correctAnswer,
     required this.difficulty,
     required this.category,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
-    final answers = (json['answers'] as List)
+    final rawAnswers = (json['answers'] as List? ?? [])
         .whereType<Map<String, dynamic>>()
         .where((a) => (a['text'] ?? '').toString().isNotEmpty)
         .toList();
 
-    final correct = answers.firstWhere(
+    final correct = rawAnswers.firstWhere(
       (a) => a['isCorrect'] == true,
-      orElse: () => answers.first,
+      orElse: () => {'text': ''},
     );
-
-    final options = answers.map((a) => a['text'].toString()).toList();
 
     return Question(
-      text: json['question'] as String? ?? '',
-      options: options,
-      correctAnswer: correct['text'].toString(),
-      difficulty: json['difficulty'] as String? ?? '',
-      category: json['category'] as String? ?? '',
+      id: (json['id'] ?? '').toString(),
+      question: (json['question'] ?? json['text'] ?? '').toString(),
+      answers: rawAnswers.map((a) => a['text'].toString()).toList(),
+      correctAnswer: (correct['text'] ?? '').toString(),
+      difficulty: (json['difficulty'] ?? '').toString(),
+      category: (json['category'] ?? '').toString(),
     );
+  }
+
+  List<String> get allAnswers {
+    final list = [...answers];
+    list.shuffle();
+    return list;
   }
 }
