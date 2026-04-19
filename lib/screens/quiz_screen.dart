@@ -6,7 +6,8 @@ import '../services/trivia_service.dart';
 import 'result_screen.dart';
 
 class QuizScreen extends StatefulWidget {
-  const QuizScreen({super.key});
+  final String difficulty;
+  const QuizScreen({super.key, this.difficulty = 'EASY'});
 
   @override
   State<QuizScreen> createState() => _QuizScreenState();
@@ -21,10 +22,13 @@ class _QuizScreenState extends State<QuizScreen> {
   bool _answered = false;
   String? _selectedAnswer;
   String? _errorMessage;
+  List<String> _missedCategories = [];
+  late String _currentDifficulty;
 
   @override
   void initState() {
     super.initState();
+    _currentDifficulty = widget.difficulty;
     _loadQuestions();
   }
 
@@ -32,12 +36,14 @@ class _QuizScreenState extends State<QuizScreen> {
     setState(() {
       _loading = true;
       _errorMessage = null;
+      _missedCategories = [];
     });
 
     try {
       final questions = await TriviaService.fetchQuestions(
         apiKey: AppConfig.quizApiKey,
         limit: 10,
+        difficulty: _currentDifficulty,
       );
       setState(() {
         _questions = questions;
@@ -86,6 +92,8 @@ class _QuizScreenState extends State<QuizScreen> {
       _answered = true;
       if (isCorrect) {
         _score += _pointsForDifficulty(_questions[_currentIndex].difficulty);
+      } else {
+        _missedCategories.add(_questions[_currentIndex].category);
       }
     });
 
@@ -109,8 +117,12 @@ class _QuizScreenState extends State<QuizScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) =>
-              ResultScreen(score: _score, total: _questions.length),
+          builder: (_) => ResultScreen(
+            score: _score,
+            total: _questions.length,
+            missedCategories: _missedCategories,
+            currentDifficulty: _currentDifficulty,
+          ),
         ),
       );
       return;
@@ -151,8 +163,10 @@ class _QuizScreenState extends State<QuizScreen> {
               const SizedBox(height: 24),
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
-              const Text('Loading questions...',
-                  style: TextStyle(fontSize: 16)),
+              Text(
+                'Loading $_currentDifficulty questions...',
+                style: const TextStyle(fontSize: 16),
+              ),
             ],
           ),
         ),
